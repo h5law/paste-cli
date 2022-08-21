@@ -32,7 +32,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/h5law/paste-cli/api"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -52,7 +54,16 @@ the content to the paste-server.
 Running this command will return the UUID, expiration date and
 access key for the paste created.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("new called")
+			out, err := newPaste()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+
+			// Loop over map keys and print values
+			for k, v := range out {
+				fmt.Printf("%s: %s\n", k, v)
+			}
 		},
 	}
 )
@@ -88,4 +99,24 @@ func init() {
 	viper.SetDefault("file", "")
 	viper.SetDefault("filetype", "plaintext")
 	viper.SetDefault("expiresIn", 14)
+}
+
+func newPaste() (map[string]string, error) {
+	// Prioritise pipe input
+	pipe := isInputFromPipe()
+	if pipe {
+		viper.Set("file", "")
+	}
+
+	// Send request and return response
+	resp, err := api.CreatePaste()
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func isInputFromPipe() bool {
+	fileInfo, _ := os.Stdin.Stat()
+	return fileInfo.Mode()&os.ModeCharDevice == 0
 }
