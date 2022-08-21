@@ -42,8 +42,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+// TODO Change to domain when out of development
+const mainUrl string = "http://127.0.0.1:3000"
+
 func CreatePaste() (map[string]string, error) {
 	url := viper.Get("url")
+	if url == nil {
+		url = mainUrl
+	}
 	filePath := viper.GetString("file")
 	fileType := viper.GetString("filetype")
 	expiresIn := viper.GetInt("expiresIn")
@@ -106,6 +112,7 @@ func CreatePaste() (map[string]string, error) {
 	return m, nil
 }
 
+// Check path given exists
 func fileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
