@@ -84,7 +84,21 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err != nil {
+	config := viper.ConfigFileUsed()
+	exists, _ := fileExists(config)
+	if err := viper.ReadInConfig(); err != nil && exists {
 		fmt.Fprintln(os.Stderr, "Error reading config file: ", err)
 	}
+}
+
+// Check path given exists
+func fileExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
