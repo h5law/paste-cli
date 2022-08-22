@@ -98,9 +98,6 @@ func init() {
 		"",
 		"Path to file to update with",
 	)
-	if pipe := utils.IsInputFromPipe(); !pipe {
-		updateCmd.MarkFlagRequired("file")
-	}
 
 	updateCmd.Flags().StringVarP(
 		&updFileType,

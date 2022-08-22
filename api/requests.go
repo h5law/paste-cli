@@ -176,9 +176,10 @@ func UpdatePaste() (map[string]string, error) {
 
 	// Set input file depending to either os.Stdin or file flag
 	var input *os.File
-	if filePath == "" {
+	pipe := utils.IsInputFromPipe()
+	if filePath == "" && pipe {
 		input = os.Stdin
-	} else {
+	} else if filePath != "" && !pipe {
 		// Check file exists and open it
 		exists, err := utils.FileExists(filePath)
 		if err != nil {
