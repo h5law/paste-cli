@@ -40,6 +40,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/h5law/paste-cli/utils"
 	"github.com/spf13/viper"
 )
 
@@ -58,9 +59,10 @@ func CreatePaste() (map[string]string, error) {
 	if url == "" {
 		url = mainUrl
 	}
-	filePath := viper.GetString("file")
-	fileType := viper.GetString("filetype")
-	expiresIn := viper.GetInt("expiresIn")
+
+	filePath := viper.GetString("new-file")
+	fileType := viper.GetString("new-filetype")
+	expiresIn := viper.GetInt("new-expiresIn")
 
 	// Set input file depending to either os.Stdin or file flag
 	var input *os.File
@@ -68,7 +70,7 @@ func CreatePaste() (map[string]string, error) {
 		input = os.Stdin
 	} else {
 		// Check file exists and open it
-		exists, err := fileExists(filePath)
+		exists, err := utils.FileExists(filePath)
 		if err != nil {
 			return nil, err
 		}
@@ -123,7 +125,7 @@ func CreatePaste() (map[string]string, error) {
 	}
 
 	// Add url field for access
-	m["url"] = url + "/" + m["uuid"]
+	m["url"] = url
 
 	return m, nil
 }
@@ -135,15 +137,16 @@ func GetPaste() (PasteResponse, error) {
 	}
 
 	// Send get request and read body
-	uuid := viper.GetString("uuid")
-	resp, err := http.Get(url + "/" + uuid)
+	uuid := viper.GetString("get-uuid")
+	url += "/" + uuid
+	resp, err := http.Get(url)
 	if err != nil {
 		return PasteResponse{}, err
 	}
 	// Check for errors in request
 	if resp.StatusCode >= 400 {
 		b, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.New(string(b))
+		return PasteResponse{}, errors.New(string(b))
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -160,14 +163,97 @@ func GetPaste() (PasteResponse, error) {
 	return paste, nil
 }
 
-// Check path given exists
-func fileExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
+func UpdatePaste() (map[string]string, error) {
+	url := viper.GetString("url")
+	if url == "" {
+		url = mainUrl
 	}
-	if os.IsNotExist(err) {
-		return false, nil
+
+	filePath := viper.GetString("upd-file")
+	fileType := viper.GetString("upd-filetype")
+	expiresIn := viper.GetInt("upd-expiresIn")
+	accessKey := viper.GetString("upd-accessKey")
+
+	// Set input file depending to either os.Stdin or file flag
+	var input *os.File
+	if filePath == "" {
+		input = os.Stdin
+	} else {
+		// Check file exists and open it
+		exists, err := utils.FileExists(filePath)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			return nil, fmt.Errorf("File not found: %s", filePath)
+		}
+		input, err = os.Open(filePath)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return false, err
+
+	// Read lines into slice
+	var content []string
+	scanner := bufio.NewScanner(input)
+	for scanner.Scan() {
+		content = append(content, scanner.Text())
+	}
+	input.Close()
+
+	// Create request JSON body
+	mi := make(map[string]interface{})
+	if content != nil {
+		mi["content"] = content
+	}
+	if fileType != "" {
+		mi["filetype"] = fileType
+	}
+	if expiresIn != 0 {
+		mi["expiresIn"] = expiresIn
+	}
+	mi["accessKey"] = accessKey
+	postBody, err := json.Marshal(mi)
+	if err != nil {
+		return nil, err
+	}
+	responseBody := bytes.NewBuffer(postBody)
+
+	// Create http client for request
+	client := &http.Client{}
+
+	// Create put request
+	uuid := viper.GetString("upd-uuid")
+	url += "/" + uuid
+	req, err := http.NewRequest(http.MethodPut, url, responseBody)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check for errors in request
+	if resp.StatusCode >= 400 {
+		b, _ := ioutil.ReadAll(resp.Body)
+		return nil, errors.New(string(b))
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal JSON response into map to return
+	m := make(map[string]string)
+	if err := json.Unmarshal(body, &m); err != nil {
+		return nil, err
+	}
+
+	// Add url field for access
+	m["url"] = url
+
+	return m, nil
 }
