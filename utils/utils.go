@@ -46,6 +46,6 @@ func FileExists(path string) (bool, error) {
 
 // Check if input is from pipe
 func IsInputFromPipe() bool {
-	fileInfo, _ := os.Stdin.Stat()
-	return fileInfo.Mode()&os.ModeCharDevice == 0
+	stat, _ := os.Stdin.Stat()
+	return stat.Mode()&os.ModeCharDevice == 0
 }
