@@ -54,16 +54,22 @@ the content to the paste-server.
 Running this command will return the UUID, expiration date and
 access key for the paste created.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			out, err := newPaste()
+			// Prioritise pipe input
+			if pipe := isInputFromPipe(); pipe {
+				viper.Set("file", "")
+			}
+
+			// Send request and print response
+			resp, err := api.CreatePaste()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 
-			fmt.Printf("uuid:      \t%s\n", out["uuid"])
-			fmt.Printf("accessKey: \t%s\n", out["accessKey"])
-			fmt.Printf("expiresAt: \t%s\n", out["expiresAt"])
-			fmt.Printf("url:       \t%s\n", out["url"])
+			fmt.Printf("uuid:      \t%s\n", resp["uuid"])
+			fmt.Printf("accessKey: \t%s\n", resp["accessKey"])
+			fmt.Printf("expiresAt: \t%s\n", resp["expiresAt"])
+			fmt.Printf("url:       \t%s\n", resp["url"])
 		},
 	}
 )
@@ -103,20 +109,6 @@ func init() {
 	viper.SetDefault("file", "")
 	viper.SetDefault("filetype", "plaintext")
 	viper.SetDefault("expiresIn", 14)
-}
-
-func newPaste() (map[string]string, error) {
-	// Prioritise pipe input
-	if pipe := isInputFromPipe(); pipe {
-		viper.Set("file", "")
-	}
-
-	// Send request and return response
-	resp, err := api.CreatePaste()
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
 }
 
 func isInputFromPipe() bool {
