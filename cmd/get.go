@@ -32,7 +32,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/h5law/paste-cli/api"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -47,7 +49,34 @@ var (
 		Short: "Retrieve a paste",
 		Long:  `Retrieve a paste from a paste-server instance with the given UUID`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("get called")
+			// Get response and load into struct
+			resp, err := api.GetPaste()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+
+			// Print content slice
+			for _, v := range resp.Content {
+				fmt.Println(v)
+			}
+
+			// If verbose set create map for other values
+			verbose := viper.GetBool("verbose")
+			m := make(map[string]string)
+			if verbose && resp.FileType != "" {
+				m["filetype"] = resp.FileType
+			}
+			if verbose && resp.ExpiresAt != "" {
+				m["expiresAt"] = resp.ExpiresAt
+			}
+
+			// Print map if verbose
+			if verbose {
+				fmt.Printf("uuid:      %s\n", viper.GetString("uuid"))
+				fmt.Printf("filetype:  %s\n", m["filetype"])
+				fmt.Printf("expiresAt: %s\n", m["expiresAt"])
+			}
 		},
 	}
 )
