@@ -34,6 +34,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -104,6 +105,11 @@ func CreatePaste() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Check for errors in request
+	if resp.StatusCode >= 400 {
+		b, _ := ioutil.ReadAll(resp.Body)
+		return nil, errors.New(string(b))
+	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -133,6 +139,11 @@ func GetPaste() (PasteResponse, error) {
 	resp, err := http.Get(url + "/" + uuid)
 	if err != nil {
 		return PasteResponse{}, err
+	}
+	// Check for errors in request
+	if resp.StatusCode >= 400 {
+		b, _ := ioutil.ReadAll(resp.Body)
+		return nil, errors.New(string(b))
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
