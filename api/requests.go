@@ -125,7 +125,7 @@ func CreatePaste() (map[string]string, error) {
 	}
 
 	// Add url field for access
-	m["url"] = url
+	m["url"] = url + "/" + m["uuid"]
 
 	return m, nil
 }
