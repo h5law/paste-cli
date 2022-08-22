@@ -60,10 +60,10 @@ access key for the paste created.`,
 				os.Exit(1)
 			}
 
-			// Loop over map keys and print values
-			for k, v := range out {
-				fmt.Printf("%s: %s\n", k, v)
-			}
+			fmt.Printf("uuid:      \t%s\n", out["uuid"])
+			fmt.Printf("accessKey: \t%s\n", out["accessKey"])
+			fmt.Printf("expiresAt: \t%s\n", out["expiresAt"])
+			fmt.Printf("url:       \t%s\n", out["url"])
 		},
 	}
 )
@@ -78,6 +78,10 @@ func init() {
 		"",
 		"Path to file for upload",
 	)
+	if pipe := isInputFromPipe(); !pipe {
+		newCmd.MarkFlagRequired("file")
+	}
+
 	newCmd.Flags().StringVarP(
 		&fileType,
 		"filetype",
@@ -103,8 +107,7 @@ func init() {
 
 func newPaste() (map[string]string, error) {
 	// Prioritise pipe input
-	pipe := isInputFromPipe()
-	if pipe {
+	if pipe := isInputFromPipe(); pipe {
 		viper.Set("file", "")
 	}
 
