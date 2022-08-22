@@ -45,6 +45,13 @@ import (
 // TODO Change to domain when out of development
 const mainUrl string = "http://pasteit.sh/"
 
+type PasteResponse struct {
+	Content   []string `json:"content,omitempty"`
+	FileType  string   `json:"filetype,omitempty"`
+	ExpiresAt string   `json:"expiresAt,omitempty"`
+	AccessKey string   `json:"accessKey,omitempty"`
+}
+
 func CreatePaste() (map[string]string, error) {
 	url := viper.GetString("url")
 	if url == "" {
@@ -113,6 +120,33 @@ func CreatePaste() (map[string]string, error) {
 	m["url"] = url + "/" + m["uuid"]
 
 	return m, nil
+}
+
+func GetPaste() (PasteResponse, error) {
+	url := viper.GetString("url")
+	if url == "" {
+		url = mainUrl
+	}
+
+	// Send get request and read body
+	uuid := viper.GetString("uuid")
+	resp, err := http.Get(url + "/" + uuid)
+	if err != nil {
+		return PasteResponse{}, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return PasteResponse{}, err
+	}
+
+	// Unmarshal JSON response into PasteResponse struct
+	var paste PasteResponse
+	if err := json.Unmarshal(body, &paste); err != nil {
+		return PasteResponse{}, err
+	}
+
+	return paste, nil
 }
 
 // Check path given exists
