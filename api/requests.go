@@ -43,11 +43,11 @@ import (
 )
 
 // TODO Change to domain when out of development
-const mainUrl string = "http://127.0.0.1:3000"
+const mainUrl string = "http://pasteit.sh/"
 
 func CreatePaste() (map[string]string, error) {
-	url := viper.Get("url")
-	if url == nil {
+	url := viper.GetString("url")
+	if url == "" {
 		url = mainUrl
 	}
 	filePath := viper.GetString("file")
@@ -93,7 +93,7 @@ func CreatePaste() (map[string]string, error) {
 	responseBody := bytes.NewBuffer(postBody)
 
 	// Send post request and read body
-	resp, err := http.Post(url.(string), "application/json", responseBody)
+	resp, err := http.Post(url, "application/json", responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +108,9 @@ func CreatePaste() (map[string]string, error) {
 	if err := json.Unmarshal(body, &m); err != nil {
 		return nil, err
 	}
+
+	// Add url field for access
+	m["url"] = url + "/" + m["uuid"]
 
 	return m, nil
 }
