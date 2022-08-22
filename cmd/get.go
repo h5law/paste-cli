@@ -41,8 +41,8 @@ import (
 
 // getCmd represents the get command
 var (
-	uuid    string
-	verbose bool
+	getUuid    string
+	getVerbose bool
 
 	getCmd = &cobra.Command{
 		Use:   "get",
@@ -56,13 +56,8 @@ var (
 				os.Exit(1)
 			}
 
-			// Print content slice
-			for _, v := range resp.Content {
-				fmt.Println(v)
-			}
-
 			// If verbose set create map for other values
-			verbose := viper.GetBool("verbose")
+			verbose := viper.GetBool("get-verbose")
 			m := make(map[string]string)
 			if verbose && resp.FileType != "" {
 				m["filetype"] = resp.FileType
@@ -73,9 +68,15 @@ var (
 
 			// Print map if verbose
 			if verbose {
-				fmt.Printf("uuid:      %s\n", viper.GetString("uuid"))
+				fmt.Printf("uuid:      %s\n", viper.GetString("get-uuid"))
 				fmt.Printf("filetype:  %s\n", m["filetype"])
 				fmt.Printf("expiresAt: %s\n", m["expiresAt"])
+				fmt.Println()
+			}
+
+			// Print content slice
+			for _, v := range resp.Content {
+				fmt.Println(v)
 			}
 		},
 	}
@@ -83,8 +84,9 @@ var (
 
 func init() {
 	rootCmd.AddCommand(getCmd)
+
 	getCmd.Flags().StringVarP(
-		&uuid,
+		&getUuid,
 		"uuid",
 		"u",
 		"",
@@ -93,15 +95,15 @@ func init() {
 	getCmd.MarkFlagRequired("uuid")
 
 	getCmd.Flags().BoolVarP(
-		&verbose,
+		&getVerbose,
 		"verbose",
 		"v",
 		false,
 		"Print detailed output",
 	)
 
-	viper.BindPFlag("uuid", getCmd.Flags().Lookup("uuid"))
-	viper.BindPFlag("verbose", getCmd.Flags().Lookup("verbose"))
-	viper.SetDefault("uuid", "")
-	viper.SetDefault("verbose", false)
+	viper.BindPFlag("get-uuid", getCmd.Flags().Lookup("uuid"))
+	viper.BindPFlag("get-verbose", getCmd.Flags().Lookup("verbose"))
+	viper.SetDefault("get-uuid", "")
+	viper.SetDefault("get-verbose", false)
 }

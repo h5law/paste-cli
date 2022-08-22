@@ -35,15 +35,16 @@ import (
 	"os"
 
 	"github.com/h5law/paste-cli/api"
+	"github.com/h5law/paste-cli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 // newCmd represents the new command
 var (
-	filePath  string
-	fileType  string
-	expiresIn int
+	newFilePath  string
+	newFileType  string
+	newExpiresIn int
 
 	newCmd = &cobra.Command{
 		Use:   "new",
@@ -55,7 +56,7 @@ Running this command will return the UUID, expiration date and
 access key for the paste created.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Prioritise pipe input
-			if pipe := isInputFromPipe(); pipe {
+			if pipe := utils.IsInputFromPipe(); pipe {
 				viper.Set("file", "")
 			}
 
@@ -78,40 +79,35 @@ func init() {
 	rootCmd.AddCommand(newCmd)
 
 	newCmd.Flags().StringVarP(
-		&filePath,
+		&newFilePath,
 		"file",
 		"f",
 		"",
 		"Path to file for upload",
 	)
-	if pipe := isInputFromPipe(); !pipe {
+	if pipe := utils.IsInputFromPipe(); !pipe {
 		newCmd.MarkFlagRequired("file")
 	}
 
 	newCmd.Flags().StringVarP(
-		&fileType,
+		&newFileType,
 		"filetype",
 		"t",
 		"plaintext",
 		"Filetype of paste",
 	)
 	newCmd.Flags().IntVarP(
-		&expiresIn,
+		&newExpiresIn,
 		"expires",
 		"e",
 		14,
 		"Number of days before paste expries (1-30)",
 	)
 
-	viper.BindPFlag("file", newCmd.Flags().Lookup("file"))
-	viper.BindPFlag("filetype", newCmd.Flags().Lookup("filetype"))
-	viper.BindPFlag("expiresIn", newCmd.Flags().Lookup("expires"))
-	viper.SetDefault("file", "")
-	viper.SetDefault("filetype", "plaintext")
-	viper.SetDefault("expiresIn", 14)
-}
-
-func isInputFromPipe() bool {
-	fileInfo, _ := os.Stdin.Stat()
-	return fileInfo.Mode()&os.ModeCharDevice == 0
+	viper.BindPFlag("new-file", newCmd.Flags().Lookup("file"))
+	viper.BindPFlag("new-filetype", newCmd.Flags().Lookup("filetype"))
+	viper.BindPFlag("new-expiresIn", newCmd.Flags().Lookup("expires"))
+	viper.SetDefault("new-file", "")
+	viper.SetDefault("new-filetype", "plaintext")
+	viper.SetDefault("new-expiresIn", 14)
 }
