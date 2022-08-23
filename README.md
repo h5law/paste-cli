@@ -39,7 +39,3 @@ url: "http://127.0.0.1:3000"
 You can also use the `--config` flag to use a config file elsewhere or if no
 config file is found / given the paste command will default to using the main
 server URL.
-
-## TODO
-- Add update subcommand and functionality
-- Add delete subcommand and functionality
