@@ -100,20 +100,19 @@ func CreatePaste() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	responseBody := bytes.NewBuffer(postBody)
+	requestBody := bytes.NewBuffer(postBody)
 
 	// Send post request and read body
-	resp, err := http.Post(url, "application/json", responseBody)
+	resp, err := http.Post(url, "application/json; charset=utf-8", requestBody)
 	if err != nil {
 		return nil, err
 	}
 	// Check for errors in request
-	if resp.StatusCode >= 400 {
-		b, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.New(string(b))
-	}
-	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil, errors.New(string(body))
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -144,12 +143,11 @@ func GetPaste() (PasteResponse, error) {
 		return PasteResponse{}, err
 	}
 	// Check for errors in request
-	if resp.StatusCode >= 400 {
-		b, _ := ioutil.ReadAll(resp.Body)
-		return PasteResponse{}, errors.New(string(b))
-	}
-	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return PasteResponse{}, errors.New(string(body))
+	}
 	if err != nil {
 		return PasteResponse{}, err
 	}
@@ -214,11 +212,11 @@ func UpdatePaste() (map[string]string, error) {
 		mi["expiresIn"] = expiresIn
 	}
 	mi["accessKey"] = accessKey
-	postBody, err := json.Marshal(mi)
+	putBody, err := json.Marshal(mi)
 	if err != nil {
 		return nil, err
 	}
-	responseBody := bytes.NewBuffer(postBody)
+	requestBody := bytes.NewBuffer(putBody)
 
 	// Create http client for request
 	client := &http.Client{}
@@ -226,7 +224,7 @@ func UpdatePaste() (map[string]string, error) {
 	// Create put request
 	uuid := viper.GetString("upd-uuid")
 	url += "/" + uuid
-	req, err := http.NewRequest(http.MethodPut, url, responseBody)
+	req, err := http.NewRequest(http.MethodPut, url, requestBody)
 	if err != nil {
 		return nil, err
 	}
@@ -237,12 +235,11 @@ func UpdatePaste() (map[string]string, error) {
 	}
 
 	// Check for errors in request
-	if resp.StatusCode >= 400 {
-		b, _ := ioutil.ReadAll(resp.Body)
-		return nil, errors.New(string(b))
-	}
-	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil, errors.New(string(body))
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -257,4 +254,50 @@ func UpdatePaste() (map[string]string, error) {
 	m["url"] = url
 
 	return m, nil
+}
+
+func DeletePaste() (string, error) {
+	url := viper.GetString("url")
+	if url == "" {
+		url = mainUrl
+	}
+
+	accessKey := viper.GetString("del-accessKey")
+
+	// Create request JSON body
+	delBody, err := json.Marshal(map[string]string{
+		"accessKey": accessKey,
+	})
+	if err != nil {
+		return "", err
+	}
+	requestBody := bytes.NewBuffer(delBody)
+
+	// Create http client for request
+	client := &http.Client{}
+
+	// Create delete request
+	uuid := viper.GetString("del-uuid")
+	url += "/" + uuid
+	req, err := http.NewRequest(http.MethodDelete, url, requestBody)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	// Check for errors in request
+	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return "", errors.New(string(body))
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
 }
