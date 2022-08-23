@@ -39,6 +39,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/h5law/paste-cli/utils"
 	"github.com/spf13/viper"
@@ -111,7 +112,7 @@ func CreatePaste() (map[string]string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return nil, errors.New(string(body))
+		return nil, errors.New(strings.TrimSpace(string(body)))
 	}
 	if err != nil {
 		return nil, err
@@ -146,7 +147,7 @@ func GetPaste() (PasteResponse, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return PasteResponse{}, errors.New(string(body))
+		return PasteResponse{}, errors.New(strings.TrimSpace(string(body)))
 	}
 	if err != nil {
 		return PasteResponse{}, err
@@ -238,7 +239,7 @@ func UpdatePaste() (map[string]string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return nil, errors.New(string(body))
+		return nil, errors.New(strings.TrimSpace(string(body)))
 	}
 	if err != nil {
 		return nil, err
@@ -293,11 +294,14 @@ func DeletePaste() (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return "", errors.New(string(body))
+		return "", errors.New(strings.TrimSpace(string(body)))
 	}
 	if err != nil {
 		return "", err
 	}
 
-	return string(body), nil
+	// Trim response
+	out := strings.TrimSpace(string(body))
+
+	return out, nil
 }
