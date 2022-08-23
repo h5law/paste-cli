@@ -46,9 +46,9 @@ var (
 
 	deleteCmd = &cobra.Command{
 		Use:   "delete",
-		Short: "Delete a paste from a paste-server instance",
+		Short: "Delete a paste",
 		Long: `Delete a paste with the given UUID from a paste-server instance provided the
-accessKey provided matches.`,
+access key provided matches.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			resp, err := api.DeletePaste()
 			if err != nil {

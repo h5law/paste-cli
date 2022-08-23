@@ -50,7 +50,7 @@ var (
 
 	updateCmd = &cobra.Command{
 		Use:   "update",
-		Short: "Update paste with the UUID provided",
+		Short: "Update paste",
 		Long: `Update a paste with the matching UUID automatically extending its time to
 expire by 14 days unless told otherwise.`,
 		Run: func(cmd *cobra.Command, args []string) {
