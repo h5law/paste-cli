@@ -32,6 +32,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/h5law/paste-cli/api"
 	"github.com/spf13/cobra"
@@ -52,7 +53,7 @@ accessKey provided matches.`,
 			resp, err := api.DeletePaste()
 			if err != nil {
 				fmt.Println(err)
-				return
+				os.Exit(1)
 			}
 			if resp != "" {
 				fmt.Println(resp)
