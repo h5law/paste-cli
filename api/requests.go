@@ -46,7 +46,7 @@ import (
 )
 
 // TODO Change to domain when out of development
-const mainUrl string = "http://pasteit.sh/"
+const mainUrl string = "http://pastes.ch:3000"
 
 type PasteResponse struct {
 	Content   []string `json:"content,omitempty"`
