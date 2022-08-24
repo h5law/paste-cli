@@ -56,10 +56,7 @@ type PasteResponse struct {
 }
 
 func CreatePaste() (map[string]string, error) {
-	url := viper.GetString("url")
-	if url == "" {
-		url = mainUrl
-	}
+	url := getUrl()
 
 	filePath := viper.GetString("new-file")
 	fileType := viper.GetString("new-filetype")
@@ -104,7 +101,7 @@ func CreatePaste() (map[string]string, error) {
 	requestBody := bytes.NewBuffer(postBody)
 
 	// Send post request and read body
-	resp, err := http.Post(url, "application/json; charset=utf-8", requestBody)
+	resp, err := http.Post(url+"/api/new", "application/json; charset=utf-8", requestBody)
 	if err != nil {
 		return nil, err
 	}
@@ -131,14 +128,11 @@ func CreatePaste() (map[string]string, error) {
 }
 
 func GetPaste() (PasteResponse, error) {
-	url := viper.GetString("url")
-	if url == "" {
-		url = mainUrl
-	}
+	url := getUrl()
 
 	// Send get request and read body
 	uuid := viper.GetString("get-uuid")
-	url += "/" + uuid
+	url += "/api/" + uuid
 	resp, err := http.Get(url)
 	if err != nil {
 		return PasteResponse{}, err
@@ -163,10 +157,7 @@ func GetPaste() (PasteResponse, error) {
 }
 
 func UpdatePaste() (map[string]string, error) {
-	url := viper.GetString("url")
-	if url == "" {
-		url = mainUrl
-	}
+	url := getUrl()
 
 	filePath := viper.GetString("upd-file")
 	fileType := viper.GetString("upd-filetype")
@@ -224,7 +215,7 @@ func UpdatePaste() (map[string]string, error) {
 
 	// Create put request
 	uuid := viper.GetString("upd-uuid")
-	url += "/" + uuid
+	url += "/api/" + uuid
 	req, err := http.NewRequest(http.MethodPut, url, requestBody)
 	if err != nil {
 		return nil, err
@@ -258,10 +249,7 @@ func UpdatePaste() (map[string]string, error) {
 }
 
 func DeletePaste() (string, error) {
-	url := viper.GetString("url")
-	if url == "" {
-		url = mainUrl
-	}
+	url := getUrl()
 
 	accessKey := viper.GetString("del-accessKey")
 
@@ -279,7 +267,7 @@ func DeletePaste() (string, error) {
 
 	// Create delete request
 	uuid := viper.GetString("del-uuid")
-	url += "/" + uuid
+	url += "/api/" + uuid
 	req, err := http.NewRequest(http.MethodDelete, url, requestBody)
 	if err != nil {
 		return "", err
@@ -304,4 +292,12 @@ func DeletePaste() (string, error) {
 	out := strings.TrimSpace(string(body))
 
 	return out, nil
+}
+
+func getUrl() string {
+	url := viper.GetString("url")
+	if url == "" {
+		url = mainUrl
+	}
+	return url
 }
