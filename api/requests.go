@@ -45,8 +45,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// TODO Change to domain when out of development
-const mainUrl string = "http://pastes.ch"
+const mainUrl string = "https://pastes.ch"
 
 type PasteResponse struct {
 	Content   []string `json:"content,omitempty"`
