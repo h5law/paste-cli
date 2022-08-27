@@ -4,7 +4,7 @@ This is a simple CLI tool written in Go to interact with a
 [paste-server](https://github.com/h5law/paste-server) either a self hosted
 instance or the main hosted site.
 
-[![asciicast](https://asciinema.org/a/9mZkUNrYhPaA3gPLcNuWtzNRy.svg)](https://asciinema.org/a/9mZkUNrYhPaA3gPLcNuWtzNRy)
+[![asciicast](https://asciinema.org/a/UeJw4fxNgcgHfrS5SoGYHuuRW.svg)](https://asciinema.org/a/UeJw4fxNgcgHfrS5SoGYHuuRW)
 
 ## Install
 
