@@ -214,8 +214,7 @@ func UpdatePaste() (map[string]string, error) {
 
 	// Create put request
 	uuid := viper.GetString("upd-uuid")
-	url += "/api/" + uuid
-	req, err := http.NewRequest(http.MethodPut, url, requestBody)
+	req, err := http.NewRequest(http.MethodPut, url+"/api/"+uuid, requestBody)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +241,7 @@ func UpdatePaste() (map[string]string, error) {
 	}
 
 	// Add url field for access
-	m["url"] = url
+	m["url"] = url + "/uuid"
 
 	return m, nil
 }
